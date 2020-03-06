@@ -7,8 +7,8 @@ pm=0.2
 Tmax=1000
 
 calculateDistance <- function(citya, cityb){
-  a = abs(citya[0] - cityb[0])
-  b = abs(citya[1] - cityb[1])
+  a = abs(citya[1] - cityb[1])
+  b = abs(citya[2] - cityb[2])
   return(sqrt((a^2)+(b^2)))
 }
 
@@ -23,6 +23,4 @@ initialPopulation <- function(cities, pSize){
 dat = matrix(c(datx, daty), nrow=2, ncol = 10, byrow = TRUE)
 print(dat)
 print(calculateDistance(dat[,1], dat[,2]))
-#population <- initialPopulation(dat, P)
-
 
