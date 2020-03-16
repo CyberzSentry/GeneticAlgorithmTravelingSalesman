@@ -7,7 +7,7 @@ daty = c(1, 4, 5, 3, 0, 4, 10, 6, 9, 10)
 P=250
 n=0.8
 pm=0.2
-Tmax=100
+Tmax=1000
 
 #Function calculating distance from one city to another
 calculateCityToCity <- function(citya, cityb){
@@ -37,7 +37,7 @@ initialPopulation <- function(cities, pSize){
 populationEvaluation <- function(population, distansMatrix){
   output <- numeric(length(population[1,]))
   for(i in 1:length(output)){
-    output[i] <- distansMatrix[population[1,i], population[-1,i]]
+    output[i] <- distansMatrix[population[1,i], population[length(population[,1]),i]]
     for(j in 1:(length(population[,1])-1)){
       output[i] <- output[i] + distansMatrix[population[j,i],population[j+1,i]]
     }
@@ -63,33 +63,33 @@ crossingFunction <- function(P1, P2){
   return(O)
 }
 
-cities = matrix(c(datx, daty), nrow=2, ncol = 10, byrow = TRUE)
+cities <- matrix(c(datx, daty), nrow=2, ncol = 10, byrow = TRUE)
 print("Initial city coordinates:")
-print(dat)
+print(cities)
 
-distansMatrix <- calculateDistanceMatrix(dat)
+distansMatrixx <- calculateDistanceMatrix(cities)
 print("Distance matrix:")
-print(distanceMatrix)
+print(distansMatrixx)
 
 population <- initialPopulation(cities, P)
+
 print("Initial population: ")
 head(population)
 
+
 for(x in 1:Tmax){
-  costMatrix <- populationEvaluation(population, distansMatrix)
+  costMatrix <- populationEvaluation(population, distansMatrixx)
   fitnesMatrix <- -costMatrix + max(costMatrix)
   #print(fitnesMatrixOrdered)
   fitnesSum <- sum(fitnesMatrix)
   #print(fitnesSum)
   #Generating offspring
   offspring = matrix(0, nrow = length(population[,1]), ncol = as.integer(P * n))
-  for(i in seq(1, as.integer((P * n)), by=2)){
+  parentPool = matrix(0, nrow = length(population[,1]), ncol = as.integer(P * n))
+  for(i in seq(1, as.integer((P * n)), by=1)){
     sumP1 = 0
-    sumP2 = 0
     P1prob = runif(1, min=0, max=fitnesSum)
-    P2prob = runif(1, min=0, max=fitnesSum)
     P1 = 0
-    P2 = 0
     for(j in 1:length(fitnesMatrix)){
       sumP1 = sumP1 + fitnesMatrix[j]
       if(sumP1>=P1prob){
@@ -97,17 +97,14 @@ for(x in 1:Tmax){
         break
       }
     }
-    for(j in 1:length(fitnesMatrix)){
-      sumP2 = sumP2 + fitnesMatrix[j]
-      if(sumP2>=P2prob){
-        P2 = j
-        break
-      }
-    }
+    parentPool[,i] <- population[,P1]
+  }
+  for(i in seq(1, as.integer((P * n)), by=2)){
+    singleParents <- sample(1:length(parentPool[1,]), 2, replace = FALSE)
     
-    O1 = crossingFunction(population[,P1], population[,P2])
+    O1 = crossingFunction(parentPool[,singleParents[1]], parentPool[,singleParents[2]])
     offspring[,i] <- O1
-    O2 = crossingFunction(population[,P2], population[,P2])
+    O2 = crossingFunction(parentPool[,singleParents[2]], parentPool[,singleParents[1]])
     offspring[,i+1] <- O1
   }
   #print(offspring)
@@ -123,7 +120,7 @@ for(x in 1:Tmax){
     }
   }
   #print(offspringMutated)
-  offspringCost <- populationEvaluation(offspringMutated, distanceMatrix)
+  offspringCost <- populationEvaluation(offspringMutated, distansMatrixx)
   offspringWithCost <- rbind(offspringMutated, offspringCost)
   parrentsWithCost <- rbind(population, costMatrix)
   combinedPopulations <- cbind(offspringWithCost, parrentsWithCost)
@@ -131,7 +128,7 @@ for(x in 1:Tmax){
   population <- population[, 1:P]
 }
 
-finalCost <- populationEvaluation(population, distanceMatrix)
+finalCost <- populationEvaluation(population, distansMatrixx)
 result <- rbind(population, finalCost)
 resultOrdered <- result[, order(result[length(result[,1]),])]
 citiesOrdered <- data.frame(x = cities[1, resultOrdered[1:(length(resultOrdered[,1])-1), 1]], y=cities[2, resultOrdered[1:(length(resultOrdered[,1])-1), 1]])
